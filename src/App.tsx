@@ -27,13 +27,37 @@ function App() {
     <div>
       <h1>{welcome.greeting}, {welcome.title}!</h1>
 
-      <ul>
-        {list.map(x => <li key={x.objectID}><a href={x.url}>{x.title}</a></li>)}
-      </ul>
+      <Search />
 
+      <hr />
+
+      <List />
+    </div>
+  )
+}
+
+function List() {
+  return (
+    <ul>
+      {list.map(x =>
+        <li key={x.objectID}>
+          <span>
+            <a href={x.url}>{x.title}</a>
+          </span>
+          <span>{x.author}</span>
+          <span>{x.num_comments}</span>
+          <span>{x.points}</span>
+        </li>)}
+    </ul>
+  )
+}
+
+function Search() {
+  return (
+    <>
       <label htmlFor="search">Search: </label>
       <input id="search" type="text" />
-    </div>
+    </>
   )
 }
 
