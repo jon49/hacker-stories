@@ -53,10 +53,15 @@ const List = () => {
 }
 
 const Search = () => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(event)
+    console.log(event.target.value)
+    console.log(event.timeStamp)
+  }
   return (
     <>
       <label htmlFor="search">Search: </label>
-      <input id="search" type="text" />
+      <input id="search" type="text" onChange={handleChange} />
     </>
   )
 }
