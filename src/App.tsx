@@ -25,11 +25,15 @@ const App = () => {
     },
   ];
 
+  const handleSearch = (searched: string) => {
+    console.log(searched)
+  }
+
   return (
     <div>
       <h1>{welcome.greeting}, {welcome.title}!</h1>
 
-      <Search />
+      <Search onSearch={handleSearch} />
 
       <hr />
 
@@ -58,11 +62,13 @@ const StoryItem = ({ story }: { story: Story }) => {
     </li>)
 }
 
-const Search = () => {
+const Search = ({onSearch}: {onSearch: (searched: string) => any}) => {
   const [searchTerm, setSearchTerm] = React.useState('')
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
+    let term = event.target.value
+    setSearchTerm(term)
+    onSearch(term)
   }
 
   return (
