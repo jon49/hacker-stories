@@ -26,7 +26,7 @@ const allStories = [
 
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = React.useState('')
+  const [searchTerm, setSearchTerm] = React.useState('React')
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     let searched = event.target.value
@@ -68,7 +68,12 @@ const StoryItem = ({ story }: { story: Story }) => {
     </li>)
 }
 
-const Search = ({onSearch, searchTerm}: {onSearch: (event: React.ChangeEvent<HTMLInputElement>) => any, searchTerm: string}) => {
+interface SearchProps {
+  onSearch: (event: React.ChangeEvent<HTMLInputElement>) => any
+  searchTerm: string
+}
+
+const Search = ({onSearch, searchTerm}: SearchProps) => {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onSearch(event)
@@ -77,8 +82,7 @@ const Search = ({onSearch, searchTerm}: {onSearch: (event: React.ChangeEvent<HTM
   return (
     <>
       <label htmlFor="search">Search: </label>
-      <input id="search" type="text" onChange={handleChange} />
-      <p>Searching for <strong>{searchTerm}</strong>.</p>
+      <input id="search" type="text" onChange={handleChange} value={searchTerm} />
     </>
   )
 }
