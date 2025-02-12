@@ -37,7 +37,9 @@ const App = () => {
     <div>
       <h1>{welcome.greeting}, {welcome.title}!</h1>
 
-      <InputWithLabel label="Search" id="search" onChange={handleSearch} type="search" value={searchTerm} />
+      <InputWithLabel id="search" onChange={handleSearch} type="search" value={searchTerm} >
+        <strong>Search:</strong>
+      </InputWithLabel>
 
       <hr />
 
@@ -72,16 +74,16 @@ interface SearchProps {
 }
 
 interface InputProps {
+  children: React.ReactNode
   id: string
-  label: string
   type?: string
   value?: string
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
-const InputWithLabel = ({ id, label, onChange, type = "text", value }: InputProps) => {
+const InputWithLabel = ({ id, children, onChange, type = "text", value }: InputProps) => {
   return (
     <>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>{children}</label>
       &nbsp;
       <input id={id} type={type} onChange={onChange} value={value} />
     </>
