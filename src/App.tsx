@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 const welcome = {
   greeting: 'Hey',
@@ -26,11 +26,14 @@ const allStories = [
 
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = React.useState('React')
+  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || 'React')
+
+  useEffect(() => {
+    localStorage.setItem('search', searchTerm)
+  }, [searchTerm])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let searched = event.target.value
-    setSearchTerm(searched)
+    setSearchTerm(event.target.value)
   }
 
   const stories = allStories.filter(x => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
