@@ -37,7 +37,7 @@ const App = () => {
     <div>
       <h1>{welcome.greeting}, {welcome.title}!</h1>
 
-      <Search onSearch={handleSearch} searchTerm={searchTerm} />
+      <InputWithLabel label="Search" id="search" onChange={handleSearch} type="search" value={searchTerm} />
 
       <hr />
 
@@ -71,16 +71,19 @@ interface SearchProps {
   searchTerm: string
 }
 
-const Search = ({onSearch, searchTerm}: SearchProps) => {
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onSearch(event)
-  }
-
+interface InputProps {
+  id: string
+  label: string
+  type?: string
+  value?: string
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+}
+const InputWithLabel = ({ id, label, onChange, type = "text", value }: InputProps) => {
   return (
     <>
-      <label htmlFor="search">Search: </label>
-      <input id="search" type="text" onChange={handleChange} value={searchTerm} />
+      <label htmlFor={id}>{label}</label>
+      &nbsp;
+      <input id={id} type={type} onChange={onChange} value={value} />
     </>
   )
 }
