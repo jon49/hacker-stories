@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const welcome = {
   greeting: 'Hey',
@@ -24,13 +24,8 @@ const allStories = [
   },
 ];
 
-
 const App = () => {
-  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('search') || 'React')
-
-  useEffect(() => {
-    localStorage.setItem('search', searchTerm)
-  }, [searchTerm])
+  const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
@@ -88,6 +83,17 @@ const Search = ({onSearch, searchTerm}: SearchProps) => {
       <input id="search" type="text" onChange={handleChange} value={searchTerm} />
     </>
   )
+}
+
+const useStorageState = <T extends string,>({ key, initialState }: { key: string, initialState: T }) => {
+  const state = useState(localStorage.getItem(key) ?? initialState)
+
+  let value = state[0]
+  useEffect(() => {
+    localStorage.setItem(key, value)
+  }, [value])
+
+  return state
 }
 
 export default App
