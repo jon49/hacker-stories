@@ -26,12 +26,20 @@ const allStories = [
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
+  const [stories, setStories] = useState<Story[]>(allStories)
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
   }
 
-  const stories = allStories.filter(x => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
+  const handleRemoveStory = (item: Story) => {
+    const newStories = stories.filter(x => x.objectID !== item.objectID)
+    setStories(newStories)
+  }
+
+  const filteredStories =
+    stories
+    .filter(x => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
     <div>
@@ -43,20 +51,25 @@ const App = () => {
 
       <hr />
 
-      <StoryList stories={stories} />
+      <StoryList stories={filteredStories} onRemoveItem={handleRemoveStory} />
     </div>
   )
 }
 
-const StoryList = ({ stories }: { stories: Story[] }) => {
+const StoryList = ({ stories, onRemoveItem }: { stories: Story[], onRemoveItem: (item: Story) => void }) => {
   return (
     <ul>
-      {stories.map(x => <StoryItem key={x.objectID} story={x} />)}
+      {stories.map(x => <StoryItem key={x.objectID} story={x} onRemoveItem={onRemoveItem} />)}
     </ul>
   )
 }
 
-const StoryItem = ({ story }: { story: Story }) => {
+interface StoryItemProps {
+  story: Story
+  onRemoveItem: (item: Story) => void
+}
+
+const StoryItem = ({ story, onRemoveItem }: StoryItemProps) => {
   return (
     <li>
       <span>
@@ -65,12 +78,8 @@ const StoryItem = ({ story }: { story: Story }) => {
       <span>{story.author}</span>
       <span>{story.num_comments}</span>
       <span>{story.points}</span>
+      <span><button onClick={() => onRemoveItem(story)} aria-label="delete">X</button></span>
     </li>)
-}
-
-interface SearchProps {
-  onSearch: (event: React.ChangeEvent<HTMLInputElement>) => any
-  searchTerm: string
 }
 
 interface InputProps {
