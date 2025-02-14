@@ -8,12 +8,15 @@ const welcome = {
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
   const [stories, setStories] = useState<Story[]>([])
+  const [loadingState, setLoadingState] = useState<LoadingState>("loading")
 
   useEffect(() => {
     getAsyncStories()
     .then(result => {
+      setLoadingState("loaded")
       setStories(result.data.stories)
     })
+    .catch(() => setLoadingState("error"))
   }, [])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +42,11 @@ const App = () => {
 
       <hr />
 
-      <StoryList stories={filteredStories} onRemoveItem={handleRemoveStory} />
+      {loadingState === "error"
+        ? <p>Something went wrong...</p>
+      : loadingState === "loading"
+        ? <p>Loading...</p>
+      : <StoryList stories={filteredStories} onRemoveItem={handleRemoveStory} />}
     </div>
   )
 }
@@ -123,9 +130,15 @@ interface AsyncStories {
   }
 }
 const getAsyncStories = (): Promise<AsyncStories> => {
-  return new Promise((resolve) =>
+  return new Promise((resolve, reject) =>
     setTimeout(
-      () => resolve({ data: { stories: initialStories } }),
+      () => {
+        if (Math.random() > 0.5) {
+          resolve({ data: { stories: initialStories } })
+        } else {
+          reject("Error")
+        }
+      },
       2000
     ));
 }
@@ -140,3 +153,5 @@ interface Story {
   points: number,
   objectID: number,
 }
+
+type LoadingState = "loading" | "loaded" | "error"
