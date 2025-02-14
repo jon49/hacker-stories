@@ -5,16 +5,35 @@ const welcome = {
   title: 'React',
 }
 
+const storiesReducer = (
+  state: StoriesState,
+  action: StoriesAction
+) => {
+  switch (action.type) {
+    case 'SET_STORIES':
+      return action.payload;
+    case 'REMOVE_STORY':
+      return state.filter(
+        (story: Story) => action.payload.objectID !== story.objectID
+      );
+    default:
+      throw new Error();
+  }
+};
+
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
-  const [stories, setStories] = useState<Story[]>([])
+  const [stories, dispatchStories] = React.useReducer(
+    storiesReducer,
+    []
+  );
   const [loadingState, setLoadingState] = useState<LoadingState>("loading")
 
   useEffect(() => {
     getAsyncStories()
     .then(result => {
       setLoadingState("loaded")
-      setStories(result.data.stories)
+      dispatchStories({ payload: result.data.stories, type: 'SET_STORIES'})
     })
     .catch(() => setLoadingState("error"))
   }, [])
@@ -24,8 +43,7 @@ const App = () => {
   }
 
   const handleRemoveStory = (item: Story) => {
-    const newStories = stories.filter(x => x.objectID !== item.objectID)
-    setStories(newStories)
+    dispatchStories({ type: "REMOVE_STORY", payload: item })
   }
 
   const filteredStories =
@@ -155,3 +173,17 @@ interface Story {
 }
 
 type LoadingState = "loading" | "loaded" | "error"
+
+type StoriesSetAction = {
+  type: 'SET_STORIES';
+  payload: Story[];
+};
+
+type StoriesRemoveAction = {
+  type: 'REMOVE_STORY';
+  payload: Story;
+};
+
+type StoriesAction = StoriesSetAction | StoriesRemoveAction;
+
+type StoriesState = Story[];
