@@ -8,14 +8,21 @@ const welcome = {
 const storiesReducer = (
   state: StoriesState,
   action: StoriesAction
-) => {
+): StoriesState => {
   switch (action.type) {
-    case 'SET_STORIES':
-      return action.payload;
+    case 'STORIES_FETCH_INIT':
+      return { data: action.payload, state: "loading" };
+    case 'STORIES_FETCH_FAILURE':
+      return { data: [], state: "error" }
+    case 'STORIES_FETCH_SUCCESS':
+      return { data: action.payload, state: "loaded" }
     case 'REMOVE_STORY':
-      return state.filter(
-        (story: Story) => action.payload.objectID !== story.objectID
-      );
+      return {
+        ...state,
+        data: state.data.filter(
+          (story: Story) => action.payload.objectID !== story.objectID
+        ),
+      };
     default:
       throw new Error();
   }
@@ -23,19 +30,14 @@ const storiesReducer = (
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
-  const [stories, dispatchStories] = React.useReducer(
-    storiesReducer,
-    []
-  );
-  const [loadingState, setLoadingState] = useState<LoadingState>("loading")
+  const [stories, dispatchStories] = React.useReducer(storiesReducer, { data: [], state: "loading" })
 
   useEffect(() => {
     getAsyncStories()
     .then(result => {
-      setLoadingState("loaded")
-      dispatchStories({ payload: result.data.stories, type: 'SET_STORIES'})
+      dispatchStories({ payload: result.data.stories, type: 'STORIES_FETCH_SUCCESS' })
     })
-    .catch(() => setLoadingState("error"))
+    .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }))
   }, [])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +49,7 @@ const App = () => {
   }
 
   const filteredStories =
-    stories
+    stories.data
     .filter(x => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
@@ -60,9 +62,9 @@ const App = () => {
 
       <hr />
 
-      {loadingState === "error"
+      {stories.state === "error"
         ? <p>Something went wrong...</p>
-      : loadingState === "loading"
+      : stories.state === "loading"
         ? <p>Loading...</p>
       : <StoryList stories={filteredStories} onRemoveItem={handleRemoveStory} />}
     </div>
@@ -175,7 +177,7 @@ interface Story {
 type LoadingState = "loading" | "loaded" | "error"
 
 type StoriesSetAction = {
-  type: 'SET_STORIES';
+  type: 'STORIES_FETCH_INIT';
   payload: Story[];
 };
 
@@ -184,6 +186,18 @@ type StoriesRemoveAction = {
   payload: Story;
 };
 
-type StoriesAction = StoriesSetAction | StoriesRemoveAction;
+type StoriesLoadFailedAction = {
+  type: 'STORIES_FETCH_FAILURE';
+}
 
-type StoriesState = Story[];
+type StoriesLoadedAction = {
+  type: 'STORIES_FETCH_SUCCESS';
+  payload: Story[];
+}
+
+type StoriesAction = StoriesSetAction | StoriesRemoveAction | StoriesLoadFailedAction | StoriesLoadedAction;
+
+interface StoriesState {
+  data: Story[],
+  state: LoadingState
+}
