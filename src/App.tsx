@@ -35,7 +35,7 @@ const App = () => {
   useEffect(() => {
     getAsyncStories()
     .then(result => {
-      dispatchStories({ payload: result.data.stories, type: 'STORIES_FETCH_SUCCESS' })
+      dispatchStories({ payload: result.hits, type: 'STORIES_FETCH_SUCCESS' })
     })
     .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }))
   }, [])
@@ -125,42 +125,12 @@ const useStorageState = <T extends string,>({ key, initialState }: { key: string
   return state
 }
 
-const initialStories = [
-  {
-    title: 'React',
-    url: 'https://reactjs.org/',
-    author: 'Jordan Walke',
-    num_comments: 3,
-    points: 4,
-    objectID: 0,
-  },
-  {
-    title: 'Redux',
-    url: 'https://redux.js.org/',
-    author: 'Dan Abramov, Andrew Clark',
-    num_comments: 2,
-    points: 5,
-    objectID: 1,
-  },
-];
-
 interface AsyncStories {
-  data: {
-    stories: Story[]
-  }
+  hits: Story[]
 }
 const getAsyncStories = (): Promise<AsyncStories> => {
-  return new Promise((resolve, reject) =>
-    setTimeout(
-      () => {
-        if (Math.random() > 0.5) {
-          resolve({ data: { stories: initialStories } })
-        } else {
-          reject("Error")
-        }
-      },
-      2000
-    ));
+  return fetch("https://hn.algolia.com/api/v1/search?query=React")
+    .then(x => x.json())
 }
 
 export default App
@@ -171,7 +141,7 @@ interface Story {
   author: string,
   num_comments: number,
   points: number,
-  objectID: number,
+  objectID: string,
 }
 
 type LoadingState = "loading" | "loaded" | "error"
