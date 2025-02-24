@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 const welcome = {
   greeting: 'Hey',
@@ -32,7 +32,7 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
   const [stories, dispatchStories] = React.useReducer(storiesReducer, { data: [], state: "loading" })
 
-  useEffect(() => {
+  const handleFetchStories = useCallback(() => {
     if (!searchTerm) return
     getAsyncStories(searchTerm)
     .then(result => {
@@ -40,6 +40,10 @@ const App = () => {
     })
     .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }))
   }, [searchTerm])
+
+  useEffect(() => {
+    handleFetchStories()
+  }, [handleFetchStories])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
