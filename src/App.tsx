@@ -33,12 +33,13 @@ const App = () => {
   const [stories, dispatchStories] = React.useReducer(storiesReducer, { data: [], state: "loading" })
 
   useEffect(() => {
-    getAsyncStories()
+    if (!searchTerm) return
+    getAsyncStories(searchTerm)
     .then(result => {
       dispatchStories({ payload: result.hits, type: 'STORIES_FETCH_SUCCESS' })
     })
     .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }))
-  }, [])
+  }, [searchTerm])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
@@ -47,10 +48,6 @@ const App = () => {
   const handleRemoveStory = (item: Story) => {
     dispatchStories({ type: "REMOVE_STORY", payload: item })
   }
-
-  const filteredStories =
-    stories.data
-    .filter(x => x.title.toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
     <div>
@@ -66,7 +63,7 @@ const App = () => {
         ? <p>Something went wrong...</p>
       : stories.state === "loading"
         ? <p>Loading...</p>
-      : <StoryList stories={filteredStories} onRemoveItem={handleRemoveStory} />}
+      : <StoryList stories={stories.data} onRemoveItem={handleRemoveStory} />}
     </div>
   )
 }
@@ -128,9 +125,53 @@ const useStorageState = <T extends string,>({ key, initialState }: { key: string
 interface AsyncStories {
   hits: Story[]
 }
-const getAsyncStories = (): Promise<AsyncStories> => {
-  return fetch("https://hn.algolia.com/api/v1/search?query=React")
+const getAsyncStories = throttle((query: string = "React"): Promise<AsyncStories> => {
+  return fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}`)
     .then(x => x.json())
+}, 1e3, { trailing: true })
+
+function throttle<T extends Function>(func: T, wait: number, options: { leading?: boolean, trailing?: boolean } = {}): T {
+  var timeout: number | null | undefined, context: any, args: any, result: any;
+  var previous = 0;
+  if (!options) options = {};
+
+  var later = function() {
+    previous = options.leading === false ? 0 : Date.now();
+    timeout = null;
+    result = func.apply(context, args);
+    if (!timeout) context = args = null;
+  };
+
+  var throttled = function(this: { cancel?: () => void }) {
+    var _now = Date.now();
+    if (!previous && options.leading === false) previous = _now;
+    var remaining = wait - (_now - previous);
+    context = this;
+    args = arguments;
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      previous = _now;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    } else if (!timeout && options.trailing !== false) {
+      timeout = setTimeout(later, remaining);
+    }
+    return result;
+  };
+
+  // @ts-ignore
+  throttled.cancel = function() {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    previous = 0;
+    timeout = context = args = null;
+  };
+
+  return throttled as any as T;
 }
 
 export default App
