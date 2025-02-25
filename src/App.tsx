@@ -34,7 +34,7 @@ const App = () => {
   const [confirmedSearch, setConfirmedSearch] = useState(true)
 
   const handleFetchStories = useCallback(() => {
-    if (!searchTerm || !confirmedSearch) return
+    if (!confirmedSearch) return
     getAsyncStories(searchTerm)
     .then(result => {
       dispatchStories({ payload: result.hits, type: 'STORIES_FETCH_SUCCESS' })
@@ -63,7 +63,7 @@ const App = () => {
       <InputWithLabel id="search" onChange={handleSearch} type="search" value={searchTerm} >
         <strong>Search:</strong>
       </InputWithLabel>
-      <button type="submit" disabled={confirmedSearch}>OK</button>
+      <button type="submit" disabled={confirmedSearch || !searchTerm}>OK</button>
     </form>
 
       <hr />
