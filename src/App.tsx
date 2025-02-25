@@ -31,15 +31,17 @@ const storiesReducer = (
 const App = () => {
   const [searchTerm, setSearchTerm] = useStorageState({key: 'search', initialState: 'React'})
   const [stories, dispatchStories] = React.useReducer(storiesReducer, { data: [], state: "loading" })
+  const [confirmedSearch, setConfirmedSearch] = useState(true)
 
   const handleFetchStories = useCallback(() => {
-    if (!searchTerm) return
+    if (!searchTerm || !confirmedSearch) return
     getAsyncStories(searchTerm)
     .then(result => {
       dispatchStories({ payload: result.hits, type: 'STORIES_FETCH_SUCCESS' })
     })
     .catch(() => dispatchStories({ type: "STORIES_FETCH_FAILURE" }))
-  }, [searchTerm])
+    .finally(() => setConfirmedSearch(false))
+  }, [confirmedSearch])
 
   useEffect(() => {
     handleFetchStories()
@@ -57,9 +59,12 @@ const App = () => {
     <div>
       <h1>{welcome.greeting}, {welcome.title}!</h1>
 
+    <form onSubmit={e => {e.preventDefault(); setConfirmedSearch(true)}}>
       <InputWithLabel id="search" onChange={handleSearch} type="search" value={searchTerm} >
         <strong>Search:</strong>
       </InputWithLabel>
+      <button type="submit" disabled={confirmedSearch}>OK</button>
+    </form>
 
       <hr />
 
