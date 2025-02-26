@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import axios from "axios";
 
 const welcome = {
   greeting: 'Hey',
@@ -134,53 +135,9 @@ const useStorageState = <T extends string,>({ key, initialState }: { key: string
 interface AsyncStories {
   hits: Story[]
 }
-const getAsyncStories = throttle((query: string = "React"): Promise<AsyncStories> => {
-  return fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}`)
-    .then(x => x.json())
-}, 1e3, { trailing: true })
-
-function throttle<T extends Function>(func: T, wait: number, options: { leading?: boolean, trailing?: boolean } = {}): T {
-  var timeout: number | null | undefined, context: any, args: any, result: any;
-  var previous = 0;
-  if (!options) options = {};
-
-  var later = function() {
-    previous = options.leading === false ? 0 : Date.now();
-    timeout = null;
-    result = func.apply(context, args);
-    if (!timeout) context = args = null;
-  };
-
-  var throttled = function(this: { cancel?: () => void }) {
-    var _now = Date.now();
-    if (!previous && options.leading === false) previous = _now;
-    var remaining = wait - (_now - previous);
-    context = this;
-    args = arguments;
-    if (remaining <= 0 || remaining > wait) {
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = null;
-      }
-      previous = _now;
-      result = func.apply(context, args);
-      if (!timeout) context = args = null;
-    } else if (!timeout && options.trailing !== false) {
-      timeout = setTimeout(later, remaining);
-    }
-    return result;
-  };
-
-  // @ts-ignore
-  throttled.cancel = function() {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-    previous = 0;
-    timeout = context = args = null;
-  };
-
-  return throttled as any as T;
+const getAsyncStories = (query: string = "React"): Promise<AsyncStories> => {
+  return axios.get(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}`)
+  .then(x => x.data)
 }
 
 export default App
